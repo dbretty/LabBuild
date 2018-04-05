@@ -1,0 +1,5 @@
+set firewall name wan-lan rule 300 action 'accept'
+set firewall name wan-lan rule 300 destination port '389'
+set firewall name wan-lan rule 300 log 'enable'
+set firewall name wan-lan rule 300 protocol 'tcp'
+set firewall name wan-lan rule 300 description 'allow ldap traffic'
