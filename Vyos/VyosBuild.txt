@@ -1,0 +1,141 @@
+config
+
+set int ethernet eth0 address 192.168.1.240/24
+set int ethernet eth0 description wan
+set int ethernet eth1 address 192.168.100.1/24
+set int ethernet eth1 description lan
+set int ethernet eth2 address 192.168.101.1/24
+set int ethernet eth2 description dmz
+
+set service ssh port 22
+set service ssh listen-address 192.168.1.240
+
+set protocols static route 0.0.0.0/0 next-hop 192.168.1.1
+
+commit
+save
+
+set system domain-name bretty.me.uk
+set system host-name vyos
+set system name-server 192.168.0.1
+set system time-zone Europe/London
+
+set nat source rule 5010 outbound-interface eth0
+set nat source rule 5010 source address 192.168.100.0/24
+set nat source rule 5010 translation address masquerade
+set nat source rule 5020 outbound-interface eth0
+set nat source rule 5020 source address 192.168.101.0/24
+set nat source rule 5020 translation address masquerade
+
+set service dns forwarding name-server 192.168.0.1
+set service dns forwarding cache-size 150
+set service dns forwarding listen-on eth1
+set service dns forwarding listen-on eth2
+
+set zone-policy zone wan interface 'eth0'
+set zone-policy zone lan interface 'eth1'
+set zone-policy zone dmz interface 'eth2'
+
+set firewall name lan-wan default-action 'drop'
+set firewall name lan-wan rule 1 action 'accept'
+set firewall name lan-wan rule 1 state established 'enable'
+set firewall name lan-wan rule 1 state related 'enable'
+set firewall name lan-wan rule 2 action 'drop'
+set firewall name lan-wan rule 2 log 'enable'
+set firewall name lan-wan rule 2 state invalid 'enable'
+set firewall name lan-wan rule 100 action 'accept'
+set firewall name lan-wan rule 100 log 'enable'
+set firewall name lan-wan rule 100 protocol 'icmp'
+set firewall name lan-wan rule 100 description 'allow ping to internet'
+set firewall name lan-wan rule 200 action 'accept'
+set firewall name lan-wan rule 200 destination port '80,443'
+set firewall name lan-wan rule 200 log 'enable'
+set firewall name lan-wan rule 200 protocol 'tcp'
+set firewall name lan-wan rule 200 description 'allow http and https to internet'
+set firewall name lan-wan rule 600 action 'accept'
+set firewall name lan-wan rule 600 destination port '53'
+set firewall name lan-wan rule 600 log 'enable'
+set firewall name lan-wan rule 600 protocol 'tcp_udp'
+set firewall name lan-wan rule 600 source address '192.168.100.10'
+set firewall name lan-wan rule 600 description 'allow dns traffic from dc to internet'
+set firewall name lan-wan rule 9999 action 'drop'
+set firewall name lan-wan rule 9999 log 'enable'
+set zone-policy zone wan from lan firewall name 'lan-wan'
+
+set firewall name wan-lan default-action 'drop'
+set firewall name wan-lan rule 1 action 'accept'
+set firewall name wan-lan rule 1 state established 'enable'
+set firewall name wan-lan rule 1 state related 'enable'
+set firewall name wan-lan rule 2 action 'drop'
+set firewall name wan-lan rule 2 log 'enable'
+set firewall name wan-lan rule 2 state invalid 'enable'
+set firewall name wan-lan rule 9999 action 'drop'
+set firewall name wan-lan rule 9999 log 'enable'
+set zone-policy zone lan from wan firewall name 'wan-lan'
+
+set firewall name dmz-wan default-action 'drop'
+set firewall name dmz-wan rule 1 action 'accept'
+set firewall name dmz-wan rule 1 state established 'enable'
+set firewall name dmz-wan rule 1 state related 'enable'
+set firewall name dmz-wan rule 2 action 'drop'
+set firewall name dmz-wan rule 2 log 'enable'
+set firewall name dmz-wan rule 2 state invalid 'enable'
+set firewall name dmz-wan rule 100 action 'accept'
+set firewall name dmz-wan rule 100 log 'enable'
+set firewall name dmz-wan rule 100 protocol 'icmp'
+set firewall name dmz-wan rule 100 description 'allow ping to internet'
+set firewall name dmz-wan rule 200 action 'accept'
+set firewall name dmz-wan rule 200 destination port '80,443'
+set firewall name dmz-wan rule 200 log 'enable'
+set firewall name dmz-wan rule 200 description 'allow http and https from dmz to internet'
+set firewall name dmz-wan rule 200 protocol 'tcp'
+set firewall name dmz-wan rule 9999 action 'drop'
+set firewall name dmz-wan rule 9999 log 'enable'
+set zone-policy zone wan from dmz firewall name 'dmz-wan'
+
+set firewall name wan-dmz default-action 'drop'
+set firewall name wan-dmz rule 1 action 'accept'
+set firewall name wan-dmz rule 1 state established 'enable'
+set firewall name wan-dmz rule 1 state related 'enable'
+set firewall name wan-dmz rule 2 action 'drop'
+set firewall name wan-dmz rule 2 log 'enable'
+set firewall name wan-dmz rule 2 state invalid 'enable'
+set firewall name wan-dmz rule 9999 action 'drop'
+set firewall name wan-dmz rule 9999 log 'enable'
+set zone-policy zone dmz from wan firewall name 'wan-dmz'
+
+set firewall name lan-dmz default-action 'drop'
+set firewall name lan-dmz rule 1 action 'accept'
+set firewall name lan-dmz rule 1 state established 'enable'
+set firewall name lan-dmz rule 1 state related 'enable'
+set firewall name lan-dmz rule 2 action 'drop'
+set firewall name lan-dmz rule 2 log 'enable'
+set firewall name lan-dmz rule 2 state invalid 'enable'
+set firewall name lan-dmz rule 200 action 'accept'
+set firewall name lan-dmz rule 200 destination port '80,443'
+set firewall name lan-dmz rule 200 log 'enable'
+set firewall name lan-dmz rule 200 description 'allow http and https from lan to dmz'
+set firewall name lan-dmz rule 200 protocol 'tcp'
+set firewall name lan-dmz rule 9999 action 'drop'
+set firewall name lan-dmz rule 9999 log 'enable'
+set zone-policy zone dmz from lan firewall name 'lan-dmz'
+
+set firewall name dmz-lan default-action 'drop'
+set firewall name dmz-lan rule 1 action 'accept'
+set firewall name dmz-lan rule 1 state established 'enable'
+set firewall name dmz-lan rule 1 state related 'enable'
+set firewall name dmz-lan rule 2 action 'drop'
+set firewall name dmz-lan rule 2 log 'enable'
+set firewall name dmz-lan rule 2 state invalid 'enable'
+set firewall name dmz-lan rule 600 action 'accept'
+set firewall name dmz-lan rule 600 destination address '192.168.100.10'
+set firewall name dmz-lan rule 600 destination port '53'
+set firewall name dmz-lan rule 600 log 'enable'
+set firewall name dmz-lan rule 600 protocol 'tcp_udp'
+set firewall name dmz-lan rule 600 description 'allow dns traffic to dc'
+set firewall name dmz-lan rule 9999 action 'drop'
+set firewall name dmz-lan rule 9999 log 'enable'
+set zone-policy zone lan from dmz firewall name 'dmz-lan'
+
+commit
+save
