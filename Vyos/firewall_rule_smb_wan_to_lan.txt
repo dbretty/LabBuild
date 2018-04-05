@@ -1,0 +1,5 @@
+set firewall name wan-lan rule 200 action 'accept'
+set firewall name wan-lan rule 200 destination port '445,139'
+set firewall name wan-lan rule 200 log 'enable'
+set firewall name wan-lan rule 200 protocol 'tcp'
+set firewall name wan-lan rule 200 description 'allow smb traffic'
