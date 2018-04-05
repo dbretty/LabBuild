@@ -171,7 +171,12 @@ Add-DnsServerResourceRecordCName -Name "wsus" -HostNameAlias "dc.bretty.me.uk" -
 $wsusconfig.OobeInitialized = $true
 $wsusConfig.Save()
 
+# Create GPO to force WSUS to Domain
+New-GPO -Name bretty_wsus
+Set-GPRegistryValue -Name "bretty_wsus" -key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" -ValueName WUServer -Type String -value http://wsus.bretty.me.uk:8530
+Set-GPRegistryValue -Name "bretty_wsus" -key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" -ValueName WUStatusServer -Type String -value http://wsus.bretty.me.uk:8530
+Set-GPRegistryValue -Name "bretty_wsus" -key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -ValueName AUOptions -Type Dword -value 4
+Set-GPRegistryValue -Name "bretty_wsus" -key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -ValueName ScheduledInstallDay -Type Dword -value 1
+Set-GPRegistryValue -Name "bretty_wsus" -key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -ValueName ScheduledInstallTime -Type Dword -value 1
 
-
-
-
+New-GPLink -Name "bretty_wsus" -Target "dc=bretty,dc=me,dc=uk" -LinkEnabled Yes
