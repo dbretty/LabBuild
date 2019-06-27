@@ -1,6 +1,0 @@
-set firewall name wan-lan rule 100 action 'accept'
-set firewall name wan-lan rule 100 destination address '192.168.100.10'
-set firewall name wan-lan rule 100 destination port '53'
-set firewall name wan-lan rule 100 log 'enable'
-set firewall name wan-lan rule 100 protocol 'tcp_udp'
-set firewall name wan-lan rule 100 description 'allow dns traffic to dc'
