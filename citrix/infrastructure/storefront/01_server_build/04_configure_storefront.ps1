@@ -1,3 +1,5 @@
+# Determine where to do the logging
+$logPS = "C:\Windows\Temp\configure_storefront.log"
 # Set the start Date and Time
 Write-Verbose "Setting Script Parameters" -Verbose
 $StartDTM = (Get-Date)
@@ -7,6 +9,9 @@ $StartDTM = (Get-Date)
 Write-Verbose "Reading Settings File" -Verbose
 $MyConfigFileloc = ("$env:Settings\Applications\Settings.xml")
 [xml]$MyConfigFile = (Get-Content $MyConfigFileLoc)
+
+# Start the transcript for the install
+Start-Transcript $LogPS
 
 # Configure Script Variables
 Write-Verbose "Configure Script Variables" -Verbose
@@ -72,7 +77,7 @@ Set-STFStoreService -StoreService $Store -UnifiedReceiver $Rfw -Confirm:$False
 Set-STFWebReceiverService -WebReceiverService $Rfw -DefaultIISSite:$True
 
 # Configure Trusted Domains
-Set-STFExplicitCommonOptions -AuthenticationService $AuthService -Domains $Domain1 -DefaultDomain $DefaultDomain -HideDomainField $True -AllowUserPasswordChange Always -ShowPasswordExpiryWarning Windows
+Set-STFExplicitCommonOptions -AuthenticationService $AuthService -Domains $DefaultDomain -DefaultDomain $DefaultDomain -HideDomainField $True -AllowUserPasswordChange Always -ShowPasswordExpiryWarning Windows
 
 # Enable the authentication methods
 # Enable-STFAuthenticationServiceProtocol -AuthenticationService $AuthService -Name Forms-Saml,Certificate
@@ -91,10 +96,13 @@ $FeaturedGroup = New-STFWebReceiverFeaturedAppGroup `
 Set-STFWebReceiverFeaturedAppGroups -WebReceiverService $Rfw -FeaturedAppGroup $FeaturedGroup
 
 # Set Receiver for Web Auth Methods
-Set-STFWebReceiverAuthenticationMethods -WebReceiverService $Rfw -AuthenticationMethods ExplicitForms,Certificate,CitrixAGBasic,Forms-Saml
+Set-STFWebReceiverAuthenticationMethods -WebReceiverService $Rfw -AuthenticationMethods ExplicitForms,CitrixAGBasic
 
 # Set Receiver Deployment Methods
 Set-STFWebReceiverPluginAssistant -WebReceiverService $Rfw -Html5Enabled Fallback -enabled $false
+
+# Enable PNAgent Services
+Enable-STFStorePna -StoreService $store -DefaultPnaService:$True
 
 # Set Session Timeout Options
 Set-STFWebReceiverService -WebReceiverService $Rfw -SessionStateTimeout 60
@@ -107,12 +115,18 @@ Set-STFWebReceiverUserInterface -WebReceiverService $Rfw -WorkspaceControlAutoRe
 Set-STFWebReceiverUserInterface -WebReceiverService $Rfw -WorkspaceControlShowReconnectButton $True
 Set-STFWebReceiverUserInterface -WebReceiverService $Rfw -WorkspaceControlShowDisconnectButton $True
 
+# Enable Socket Pooling
+Set-STFStoreFarmConfiguration -StoreService $Store -PooledSockets $True
+
 # Set Client Interface Settings
 Set-STFWebReceiverUserInterface -WebReceiverService $Rfw -AutoLaunchDesktop $False
 Set-STFWebReceiverUserInterface -WebReceiverService $Rfw -ReceiverConfigurationEnabled $True
 
 # Enable Loopback on HTTP
-Set-DSLoopback -SiteId $SiteID -VirtualPath $SFPathWeb -Loopback OnUsingHttp
+Set-DSLoopback -SiteId $SiteID -VirtualPath $SFPathWeb -Loopback On
+
+# Enable STS
+Set-STFWebReceiverStrictTransportSecurity -WebReceiverService $Rfw -Enabled $True
 
 # Stop Logging
 Write-Verbose "Stop logging" -Verbose
