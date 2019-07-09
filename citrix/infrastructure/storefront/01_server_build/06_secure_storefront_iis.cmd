@@ -1,5 +1,5 @@
-%systemroot%\system32\inetsrv\AppCmd.exe set config "Default Web Site" -section:system.webServer/security/requestFiltering -fileExtensions.allowUnlisted:"False"
-%systemroot%\system32\inetsrv\AppCmd.exe set config "Default Web Site" -section:system.webServer/security/requestFiltering -verbs.allowUnlistedVerb:"False"
+%systemroot%\system32\inetsrv\AppCmd.exe set config "Default Web Site" /section:requestfiltering /fileExtensions.allowunlisted:false "/commit:apphost"
+%systemroot%\system32\inetsrv\AppCmd.exe set config "Default Web Site" /section:requestfiltering /verbs.allowunlisted:false "/commit:apphost"
 
 %systemroot%\system32\inetsrv\AppCmd.exe set config "Default Web Site" -section:system.webServer/security/requestFiltering /fileExtensions.applyToWebDAV:"False"
 %systemroot%\system32\inetsrv\AppCmd.exe set config "Default Web Site" -section:system.webServer/security/requestFiltering /+"fileExtensions.[fileExtension='.',allowed='True']"
