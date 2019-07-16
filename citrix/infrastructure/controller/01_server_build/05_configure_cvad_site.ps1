@@ -54,11 +54,11 @@ Start-Transcript $LogPS
 Write-Verbose "Import PowerShell Module" -Verbose
 Add-PSSnapin Citrix.*
 
-Write-Verbose "New Site - Creating $SiteName Site and Databases" -Verbose  
-New-XDDatabase -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DataStore Site -DatabaseServer $DatabaseServer -DatabaseName $DatabaseName_Site -DatabaseCredentials $Database_CredObject 
-New-XDDatabase -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DataStore Logging -DatabaseServer $DatabaseServer -DatabaseName $DatabaseName_Logging -DatabaseCredentials $Database_CredObject 
-New-XDDatabase -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DataStore Monitor -DatabaseServer $DatabaseServer -DatabaseName $DatabaseName_Monitor -DatabaseCredentials $Database_CredObject
-New-XDSite -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DatabaseServer $DatabaseServer -LoggingDatabaseName $DatabaseName_Logging -MonitorDatabaseName $DatabaseName_Monitor -SiteDatabaseName $DatabaseName_Site
+Write-Verbose "Creating $SiteName Site and Databases" -Verbose  
+New-XDDatabase -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DataStore Site -DatabaseServer $DatabaseServer -DatabaseName $DatabaseName_site -DatabaseCredentials $Database_CredObject 
+New-XDDatabase -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DataStore Logging -DatabaseServer $DatabaseServer -DatabaseName $DatabaseName_logging -DatabaseCredentials $Database_CredObject 
+New-XDDatabase -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DataStore Monitor -DatabaseServer $DatabaseServer -DatabaseName $DatabaseName_monitor -DatabaseCredentials $Database_CredObject
+New-XDSite -AdminAddress $env:COMPUTERNAME -SiteName $SiteName -DatabaseServer $DatabaseServer -LoggingDatabaseName $DatabaseName_logging -MonitorDatabaseName $DatabaseName_monitor -SiteDatabaseName $DatabaseName_site
 
 Write-Verbose "Setting up Licensing Server" -Verbose  
 Set-ConfigSite -AdminAddress $env:COMPUTERNAME -LicenseServerName $LicenseServer -LicenseServerPort $Port -LicensingModel $LicensingModel -ProductCode $ProductCode -ProductEdition $ProductEdition
@@ -66,7 +66,7 @@ $LicenseServer_AdminAddress = Get-LicLocation -AddressType $AddressType -License
 $LicenseServer_CertificateHash = $(Get-LicCertificate  -AdminAddress $LicenseServer_AdminAddress).CertHash
 Set-ConfigSiteMetadata -AdminAddress $env:COMPUTERNAME -Name "CertificateHash" -Value $LicenseServer_CertificateHash
 
-# Import Citrix Powershell Module
+# Trust XML Requests
 Write-Verbose "Trust Requests to the XML Port" -Verbose
 Set-BrokerSite -TrustRequestsSentToTheXmlServicePort $true
 
@@ -81,7 +81,7 @@ Rename-ConfigZone -Name 'Primary' -NewName $ZoneName
 
 # Adding StoreFront Configuration
 Write-Verbose "Adding StoreFront Configuration" -Verbose
-$configuration = New-SfStorefrontAddress -Url $StoreFrontURL -Description "Citrix StoreFront Serviced" -Name "Citrix StoreFront" -Enabled $true
+$configuration = New-SfStorefrontAddress -Url $StoreFrontURL -Description "Citrix StoreFront Services" -Name "Citrix StoreFront" -Enabled $true
 Get-SfStorefrontAddress -ByteArray $configuration
 $Config = Get-BrokerConfigurationSlot | where-object {$_.Name -eq "RS"}
 $SlotID = $Config.Uid

@@ -11,7 +11,7 @@ $PackageName = "NutanixAHV_Citrix_Plugin"
 $InstallerType = "msi"
 $LogPS = "${env:SystemRoot}" + "\Temp\$Vendor $Product $Version PS Wrapper.log"
 $LogApp = "${env:SystemRoot}" + "\Temp\$PackageName.log"
-$UnattendedArgs = "/i $PackageName.$InstallerType ALLUSERS=1 /qn /liewa $LogApp"
+$UnattendedArgs = "/i $PackageName.$InstallerType ALLUSERS=1 ISCITRIXMCSINSTALL=""C:\Program Files\Common Files\Citrix\HCLPlugins\CitrixMachineCreation\v1.0.0.0\"" PLUGININSTALLPATH=""C:\Program Files\Common Files\Citrix\HCLPlugins\CitrixMachineCreation\v1.0.0.0\"" INSTALLFOLDER=""C:\Program Files\Common Files\Citrix\HCLPlugins\CitrixMachineCreation\v1.0.0.0\NutanixAcropolis\"" PVSINSTALLFOLDER=""C:\Program Files\Common Files\Citrix\HCLPlugins\CitrixMachineCreation\v1.0.0.0\NutanixAHV\"" REGISTERPLUGINSTOREPATH=""C:\Program Files\Common Files\Citrix\HCLPlugins\CitrixMachineCreation\v1.0.0.0\"" ADDLOCAL=F7_9_INSTALLFOLDER REMOVE=PVS_F7_14_INSTALLFOLDER,F7_9_CWA_INSTALLFOLDER /qn /liewa $LogApp"
 
 # Start the transcript for the install
 Start-Transcript $LogPS
