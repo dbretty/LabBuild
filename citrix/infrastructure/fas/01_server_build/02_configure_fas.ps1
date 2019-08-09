@@ -62,6 +62,25 @@ $CitrixFasAddress = (Get-FasServer)[0].Address
 $DefaultCA=(Get-FasMsCertificateAuthority -Default).Address
 New-FasAuthorizationCertificate -CertificateAuthority $DefaultCA -CertificateTemplate "Citrix_RegistrationAuthority" -AuthorizationTemplate "Citrix_RegistrationAuthority_ManualAuthorization" -Address $CitrixFasAddress
 
+# Install PKI Powershell SDK
+Write-Verbose "Install PKI Powershell SDK" -Verbose
+Install-PackageProvider -Name NuGet -Force
+Install-Module -Name PSPKI -Force
+Import-Module PSPKI
+
+# Get pending request and authorise it
+Write-Verbose "Get pending request and authorise it" -Verbose
+Get-PendingRequest -CertificationAuthority $CertAuthority | Approve-CertificateRequest
+
+# Setup FAS Rule
+Write-Verbose "Setup FAS Rule" -Verbose
+$AuthorizationCertificate=(Get-FasAuthorizationCertificate)[0].Id
+New-FasCertificateDefinition -CertificateAuthorities $DefaultCA -MsTemplate "Citrix_SmartcardLogon" -AuthorizationCertificate $AuthorizationCertificate
+$Computer = $env:computername
+$SFServer = (Get-ADComputer $Computer).sid
+$SID = $SFServer.Value
+$CertificateDefinition=(Get-FasCertificateDefinition)[0].name
+New-FasRule -Name "Default" -CertificateDefinitions @($CertificateDefinition) -StoreFrontAcl "D:P(A;;CC;;;$SID)"
 
 # Stop Logging
 Write-Verbose "Stop logging" -Verbose
